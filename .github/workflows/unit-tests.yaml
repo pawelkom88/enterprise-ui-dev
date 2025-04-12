@@ -1,0 +1,36 @@
+name: Run Unit Tests  # Name of the workflow that appears in the Actions tab
+
+on:  # Defines when the workflow will run
+  push:  # Trigger the workflow on push events
+    branches: [main]  # Only trigger on pushes to the main branch
+  pull_request:  # Trigger the workflow on pull request events
+    branches: [main]  # Only trigger on pull requests to the main branch
+    paths-ignore:  # Don't trigger the workflow when these files are changed
+      - '**.md'  # Ignore markdown files
+      - 'LICENSE'  # Ignore the LICENSE file
+      - 'CODEOWNERS'  # Ignore the CODEOWNERS file
+  workflow_dispatch:  # Allow manual triggering of the workflow from the Actions tab
+
+jobs:  # Groups together all the jobs that run in this workflow
+  unit-tests:  # Defines a job with the ID "unit-tests"
+    runs-on: ubuntu-latest  # Runs the job on the latest Ubuntu runner
+
+    strategy:  # Define a matrix strategy for running tests with different Node.js versions
+      matrix:
+        node-version: [16.x, 18.x]  # Test with Node.js 16.x and 18.x
+
+    steps:  # List of steps to be run as part of the job
+      - name: Checkout repository  # Step name for checking out the repository
+        uses: actions/checkout@v3  # Use the checkout action at version 3
+
+      - name: Setup Node.js ${{ matrix.node-version }}  # Step name for setting up Node.js
+        uses: actions/setup-node@v3  # Use the setup-node action at version 3
+        with:
+          node-version: ${{ matrix.node-version }}  # Use the Node.js version from the matrix
+          cache: 'npm'  # Cache npm dependencies to speed up installation
+
+      - name: Install dependencies  # Step name for installing dependencies
+        run: npm ci  # Clean install of dependencies
+
+      - name: Run unit tests  # Step name for running tests
+        run: npm run test  # Run the test script defined in package.json
