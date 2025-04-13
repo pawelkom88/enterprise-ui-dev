@@ -11,7 +11,7 @@ on:  # Defines when the workflow will run
       - 'CODEOWNERS'  # Ignore the CODEOWNERS file
   workflow_dispatch:  # Allow manual triggering of the workflow from the Actions tab
 
-jobs:  # Groups together all the jobs that run in this workflow
+jobs:  # Groups together all the jobs that run in this workflow / jobs and workflow can run in parallel
   unit-tests:  # Defines a job with the ID "unit-tests"
     runs-on: ubuntu-latest  # Runs the job on the latest Ubuntu runner
 
@@ -19,7 +19,7 @@ jobs:  # Groups together all the jobs that run in this workflow
       matrix:
         node-version: [16.x, 18.x]  # Test with Node.js 16.x and 18.x
 
-    steps:  # List of steps to be run as part of the job
+    steps:  # List of steps to be run as part of the job / run sequentially
       - name: Checkout repository  # Step name for checking out the repository
         uses: actions/checkout@v3  # Use the checkout action at version 3
 
@@ -32,8 +32,8 @@ jobs:  # Groups together all the jobs that run in this workflow
       - name: Install dependencies  # Step name for installing dependencies
         run: npm ci  # Clean install of dependencies
 
-      - name: Run unit tests  # Step name for running tests
-        run: npm run test  # Run the test script defined in package.json
-
-      - name: Build the app # Step name for building the app
-        run: npm run build
+      - name: Run unit tests and build the app  # Step name for running tests
+        run: |
+          npm run test &
+          npm run build &
+          wait
